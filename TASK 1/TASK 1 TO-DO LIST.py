@@ -3,7 +3,8 @@ import tkinter as tk
 from tkinter import messagebox
 import os
 
-TASKS_FILE = "To-do_Tasks.txt"
+# Save the file in the same directory as the script
+TASKS_FILE = os.path.join(os.path.dirname(__file__), "To-do_Tasks.txt")
 
 class ToDoApp:
     def __init__(self, root):
@@ -39,6 +40,7 @@ class ToDoApp:
             self.tasks.append({"task": task, "done": False})
             self.entry.delete(0, tk.END)
             self.update_listbox()
+            self.save_tasks()
         else:
             messagebox.showwarning("Input Error", "Task cannot be empty!")
 
@@ -48,6 +50,7 @@ class ToDoApp:
             idx = selected[0]
             self.tasks[idx]["done"] = not self.tasks[idx]["done"]
             self.update_listbox()
+            self.save_tasks()
         else:
             messagebox.showinfo("No Task Selected", "Select a task to mark as done.")
 
@@ -59,6 +62,7 @@ class ToDoApp:
             if confirm:
                 self.tasks.pop(idx)
                 self.update_listbox()
+                self.save_tasks()
         else:
             messagebox.showinfo("No Task Selected", "Select a task to delete.")
 
@@ -68,16 +72,21 @@ class ToDoApp:
             status = "✅" if task["done"] else "⬜"
             self.listbox.insert(tk.END, f"{status} {task['task']}")
 
-    def save_and_exit(self):
-        with open(TASKS_FILE, "w") as f:
+    def save_tasks(self):
+        print("Saving tasks to:", os.path.abspath(TASKS_FILE))
+        with open(TASKS_FILE, "w", encoding="utf-8") as f:
             for task in self.tasks:
                 status = "1" if task["done"] else "0"
                 f.write(f"{task['task']}|{status}\n")
+        print("✅ Tasks saved successfully!\n")
+
+    def save_and_exit(self):
+        self.save_tasks()
         self.root.destroy()
 
     def load_tasks(self):
         if os.path.exists(TASKS_FILE):
-            with open(TASKS_FILE, "r") as f:
+            with open(TASKS_FILE, "r", encoding="utf-8") as f:
                 for line in f:
                     if "|" in line:
                         task_text, done_flag = line.strip().split("|")
